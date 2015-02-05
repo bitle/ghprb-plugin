@@ -86,6 +86,7 @@ public class GhprbTestUtil {
 		jsonObject.put("username", "user");
 		jsonObject.put("password", "1111");
 		jsonObject.put("accessToken", "accessToken");
+        jsonObject.put("statusAccessToken", "statusAccessToken");
 		jsonObject.put("adminlist", "user");
 		jsonObject.put("allowMembersOfWhitelistedOrgsAsAdmin", "false");
 		jsonObject.put("publishedURL", "");

@@ -390,6 +390,7 @@ public class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
         private String username;
         private String password;
         private String accessToken;
+        private String statusAccessToken;
         private String adminlist;
         private String publishedURL;
         private String requestForTestingPhrase;
@@ -420,6 +421,7 @@ public class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
             username = formData.getString("username");
             password = formData.getString("password");
             accessToken = formData.getString("accessToken");
+            statusAccessToken = formData.getString("statusAccessToken");
             adminlist = formData.getString("adminlist");
             publishedURL = formData.getString("publishedURL");
             requestForTestingPhrase = formData.getString("requestForTestingPhrase");
@@ -470,6 +472,10 @@ public class GhprbTrigger extends Trigger<AbstractProject<?, ?>> {
 
         public String getAccessToken() {
             return accessToken;
+        }
+
+        public String getStatusAccessToken() {
+            return statusAccessToken;
         }
 
         public String getAdminlist() {

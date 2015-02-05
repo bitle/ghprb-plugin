@@ -2,10 +2,14 @@ package org.jenkinsci.plugins.ghprb;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import com.google.gson.Gson;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 
+import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.Response;
+import org.apache.http.entity.ContentType;
 import org.kohsuke.github.*;
 import org.kohsuke.github.GHEventPayload.IssueComment;
 import org.kohsuke.github.GHEventPayload.PullRequest;
@@ -134,11 +138,7 @@ public class GhprbRepository {
             logger.log(Level.INFO, newMessage);
         }
         try {
-            if (context != null && !context.isEmpty()) {
-                ghRepository.createCommitStatus(sha1, state, url, message, context);
-            } else {
-                ghRepository.createCommitStatus(sha1, state, url, message);
-            }
+            postCommitStatus(sha1, state, url, message, context);
         } catch (FileNotFoundException ex) {
             newMessage = "FileNotFoundException means that the credentials Jenkins is using is probably wrong. Or that something is really wrong with github.";
             if (stream != null) {
@@ -170,6 +170,29 @@ public class GhprbRepository {
                 logger.log(Level.SEVERE, "Could not update commit status of the Pull Request on GitHub.");
             }
         }
+    }
+
+    private void postCommitStatus(String sha1, GHCommitState state, String url, String message, String context) throws IOException {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("state", state.name().toLowerCase(Locale.ENGLISH));
+        map.put("target_url", url);
+        map.put("description", message);
+
+        if (context != null && !context.isEmpty()) {
+            map.put("context", context);
+        }
+
+        Gson gson = new Gson();
+        String body = gson.toJson(map);
+
+        String baseUrl = "https://api.github.com/repos/%s/statuses/%s";
+
+
+        Response response = Request.Post(String.format(baseUrl, this.reponame, sha1))
+                .addHeader("Authorization", "token " + GhprbTrigger.getDscp().getStatusAccessToken())
+                .bodyString(body, ContentType.APPLICATION_JSON)
+                .execute();
+        String content = response.returnContent().asString();
     }
 
     public String getName() {

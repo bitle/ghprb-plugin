@@ -6,6 +6,9 @@
     <f:entry title="${%Access Token}" field="accessToken">
       <f:password />
     </f:entry>
+    <f:entry title="${%Status Access Token}" field="statusAccessToken">
+      <f:password />
+    </f:entry>
     <f:entry title="${%Use comments to report results when updating commit status fails}" field="useComments">
       <f:checkbox />
     </f:entry>
