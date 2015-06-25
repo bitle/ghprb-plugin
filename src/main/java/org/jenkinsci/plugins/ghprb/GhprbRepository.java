@@ -192,7 +192,7 @@ public class GhprbRepository {
                 .addHeader("Authorization", "token " + GhprbTrigger.getDscp().getStatusAccessToken())
                 .bodyString(body, ContentType.APPLICATION_JSON)
                 .execute();
-        String content = response.returnContent().asString();
+        response.discardContent();
     }
 
     public String getName() {
