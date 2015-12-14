@@ -7,6 +7,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 import org.apache.http.entity.ContentType;
@@ -187,12 +188,20 @@ public class GhprbRepository {
 
         String baseUrl = "https://api.github.com/repos/%s/statuses/%s";
 
-
-        Response response = Request.Post(String.format(baseUrl, this.reponame, sha1))
-                .addHeader("Authorization", "token " + GhprbTrigger.getDscp().getStatusAccessToken())
-                .bodyString(body, ContentType.APPLICATION_JSON)
-                .execute();
-        response.discardContent();
+        try {
+            Response response = Request.Post(String.format(baseUrl, this.reponame, sha1))
+                    .addHeader("Authorization", "token " + GhprbTrigger.getDscp().getStatusAccessToken())
+                    .bodyString(body, ContentType.APPLICATION_JSON)
+                    .execute();
+            logger.log(Level.INFO, response.returnContent().asString());
+        } catch (NoHttpResponseException e) {
+            logger.log(Level.INFO, "Retrying...");
+            Response response = Request.Post(String.format(baseUrl, this.reponame, sha1))
+                    .addHeader("Authorization", "token " + GhprbTrigger.getDscp().getStatusAccessToken())
+                    .bodyString(body, ContentType.APPLICATION_JSON)
+                    .execute();
+            logger.log(Level.INFO, response.returnContent().asString());
+        }
     }
 
     public String getName() {
