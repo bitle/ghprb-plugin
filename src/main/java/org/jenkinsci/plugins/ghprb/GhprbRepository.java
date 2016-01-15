@@ -11,6 +11,7 @@ import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 import org.apache.http.entity.ContentType;
+import org.bouncycastle.cert.ocsp.Req;
 import org.kohsuke.github.*;
 import org.kohsuke.github.GHEventPayload.IssueComment;
 import org.kohsuke.github.GHEventPayload.PullRequest;
@@ -191,6 +192,7 @@ public class GhprbRepository {
         try {
             Response response = Request.Post(String.format(baseUrl, this.reponame, sha1))
                     .addHeader("Authorization", "token " + GhprbTrigger.getDscp().getStatusAccessToken())
+                    .addHeader("Connection", "close")
                     .bodyString(body, ContentType.APPLICATION_JSON)
                     .execute();
             logger.log(Level.INFO, response.returnContent().asString());
