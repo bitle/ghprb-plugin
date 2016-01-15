@@ -10,6 +10,7 @@ import jenkins.model.Jenkins;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.ContentType;
 import org.bouncycastle.cert.ocsp.Req;
 import org.kohsuke.github.*;
@@ -189,20 +190,24 @@ public class GhprbRepository {
 
         String baseUrl = "https://api.github.com/repos/%s/statuses/%s";
 
-        try {
-            Response response = Request.Post(String.format(baseUrl, this.reponame, sha1))
-                    .addHeader("Authorization", "token " + GhprbTrigger.getDscp().getStatusAccessToken())
-                    .addHeader("Connection", "close")
-                    .bodyString(body, ContentType.APPLICATION_JSON)
-                    .execute();
-            logger.log(Level.INFO, response.returnContent().asString());
-        } catch (NoHttpResponseException e) {
-            logger.log(Level.INFO, "Retrying...");
-            Response response = Request.Post(String.format(baseUrl, this.reponame, sha1))
-                    .addHeader("Authorization", "token " + GhprbTrigger.getDscp().getStatusAccessToken())
-                    .bodyString(body, ContentType.APPLICATION_JSON)
-                    .execute();
-            logger.log(Level.INFO, response.returnContent().asString());
+        for (int i = 0; i < 3; i++) {
+            try {
+                Response response = Request.Post(String.format(baseUrl, this.reponame, sha1))
+                        .addHeader("Authorization", "token " + GhprbTrigger.getDscp().getStatusAccessToken())
+                        .addHeader("Connection", "close")
+                        .bodyString(body, ContentType.APPLICATION_JSON)
+                        .execute();
+                logger.log(Level.INFO, response.returnContent().asString());
+                break;
+            } catch (NoHttpResponseException e) {
+                logger.log(Level.INFO, "Retrying...");
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    logger.log(Level.INFO, "Sleep interrupted");
+                }
+            }
         }
     }
 
