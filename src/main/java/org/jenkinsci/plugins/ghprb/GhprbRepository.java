@@ -198,6 +198,7 @@ public class GhprbRepository {
                         .bodyString(body, ContentType.APPLICATION_JSON)
                         .execute();
                 logger.log(Level.INFO, response.returnContent().asString());
+                response.discardContent();
                 break;
             } catch (NoHttpResponseException e) {
                 logger.log(Level.INFO, "Retrying...");
